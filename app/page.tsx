@@ -1,15 +1,13 @@
 
 let title: string = "Weather App";
-
 type ButtonProps = {
-  text: string;
-  color?: string;
+  style: React.CSSProperties;
 }
-const Button = (props: ButtonProps) => {
-  const { text, color } = props;
+
+const Button = ({style}: ButtonProps) => {
   return (
-    <button>
-      {text} 
+    <button style={style}>
+      {title} 
     </button>
   );
 }
@@ -17,7 +15,7 @@ const Button = (props: ButtonProps) => {
 function Page() {
   return (
     <div>
-      <Button text = {title} color = "orange"/>
+      <Button style = {{backgroundColor: "orange", fontSize: 16}}/>
     </div>
   );
 }
