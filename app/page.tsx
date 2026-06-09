@@ -1,12 +1,13 @@
-
+"use client";
 let title: string = "Weather App";
+
 type ButtonProps = {
-  citiesTemp: Record<"London"|"New York"|"Tokyo", number>;
+  onClick: (text: string) => void;
 }
 
-const Button = ({}: ButtonProps) => {
+function Button({onClick}: ButtonProps){
   return (
-    <button >
+    <button onClick={() => onClick("Clicked")} >
       {title} 
     </button>
   );
@@ -15,8 +16,10 @@ const Button = ({}: ButtonProps) => {
 function Page() {
   return (
     <div>
-      <Button citiesTemp=
-      {{'New York': 25, 'London': 18, 'Tokyo': 30}}
+      <Button 
+        onClick ={() => {
+          console.log("Button clicked!");
+        }}
       />
     </div>
   );
