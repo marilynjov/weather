@@ -1,13 +1,19 @@
 "use client";
+
+import React from "react";
+
 let title: string = "Weather App";
 
 type ButtonProps = {
-  onClick: (text: string) => void;
+  children: React.ReactNode; 
+  // JSX.Element; from React 18, ReactNode is more appropriate for 
+  // children as it can represent any renderable content, including 
+  // strings, numbers, fragments, and arrays of elements.
 }
 
-function Button({onClick}: ButtonProps){
+function Button({children}: ButtonProps){
   return (
-    <button onClick={() => onClick("Clicked")} >
+    <button >
       {title} 
     </button>
   );
@@ -16,11 +22,9 @@ function Button({onClick}: ButtonProps){
 function Page() {
   return (
     <div>
-      <Button 
-        onClick ={() => {
-          console.log("Button clicked!");
-        }}
-      />
+      <Button>
+          Click
+      </Button>
     </div>
   );
 }
