@@ -1,12 +1,12 @@
 
 let title: string = "Weather App";
 type ButtonProps = {
-  style: React.CSSProperties;
+  citiesTemp: Record<"London"|"New York"|"Tokyo", number>;
 }
 
-const Button = ({style}: ButtonProps) => {
+const Button = ({}: ButtonProps) => {
   return (
-    <button style={style}>
+    <button >
       {title} 
     </button>
   );
@@ -15,7 +15,9 @@ const Button = ({style}: ButtonProps) => {
 function Page() {
   return (
     <div>
-      <Button style = {{backgroundColor: "orange", fontSize: 16}}/>
+      <Button citiesTemp=
+      {{'New York': 25, 'London': 18, 'Tokyo': 30}}
+      />
     </div>
   );
 }
