@@ -1,32 +1,32 @@
 "use client";
 
-import {Dispatch, SetStateAction, useState} from "react";
+import {Dispatch, SetStateAction, useState, ComponentPropsWithoutRef} from "react";
 
 let title: string = "Weather App";
 
-type ButtonProps = {
-  setCount: Dispatch<SetStateAction<number>>
-}
+type ButtonProps = ComponentPropsWithoutRef<"button">
 
-function Button({setCount}: ButtonProps){
 
+function Button({onClick, ...rest}: ButtonProps){
+  const handleclick = () => {
+    if (onclick) { 
+      alert("Clicked")
+    }
+  }
   return (
-    <button onClick = {() => setCount(5)}>
+    <button {...rest}>
       {title} 
     </button>
   );
 }
 
 function Page() {
-  const[count, setCount] = useState<number>(0)
   
   return (
     <div>
-      <h1 style={{ textAlign: "center" }}>{count}</h1>
-      <Button
-        setCount = {setCount}
-      />
-          
+      <Button onClick = {() => alert("Welcome")}>
+
+      </Button>
     </div>
   );
 }
