@@ -8,7 +8,9 @@ import {
   PencilLine,
   Calendar,
   FileText,
-  Users
+  Users,
+  Sun
+
 } from "lucide-react";
 
 
@@ -24,69 +26,41 @@ export interface MenuItem {
 
 export const menuItems: MenuItem[] = [
   { 
-    id: 'start', 
-    label: 'Start', 
-    icon: House, 
-    gradient: 'from-sky-300/60 to-blue-300/60',
-    glowColor: 'rgba(56, 189, 248, 0.4)',
-    url: 'https://www.polskiewszwecji.com'
+    id: 'home', 
+    label: 'Weather', 
+    icon: Sun, 
+    gradient: 'from-white/25 to-white/10',
+    glowColor: 'rgba(255, 255, 255, 0.15)',
+    url: 'http://localhost:3000'
   },
   { 
-    id: 'firmy', 
-    label: 'Polskie firmy', 
-    icon: Building, 
-    gradient: 'from-blue-500/60 to-blue-600/60',
-    glowColor: 'rgba(59, 130, 246, 0.4)',
-    url: 'https://www.polskiewszwecji.com/polskie-firmy/',
+    id: 'forecast', 
+    label: 'Forecast', 
+    icon: Calendar, 
+    gradient: 'from-white/25 to-white/10',
+    glowColor: 'rgba(255, 255, 255, 0.15)',
+    url: '/forecast',
     submenu: [
       {
-        id: 'firmy-lista',
-        label: 'Polskie firmy',
+        id: 'day-forecast',
+        label: 'Day',
         icon: Building,
-        url: 'https://www.polskiewszwecji.com/polskie-firmy/'
+        url: '/forecast/day'
       },
       {
-        id: 'sklepy',
-        label: 'Sklepy polonijne',
+        id: 'week-forecast',
+        label: 'Week',
         icon: Store,
-        url: 'https://www.polskiewszwecji.com/polskie-firmy?polski-sklep'
-      },
-      {
-        id: 'dodaj',
-        label: '+ dodaj swoją firmę',
-        icon: Plus,
-        url: 'https://www.polskiewszwecji.com/twoja-firma'
-      },
-      {
-        id: 'edytuj',
-        label: '+ edytuj swoją wizytówkę',
-        icon: PencilLine,
-        url: 'https://www.polskiewszwecji.com/edytuj-firme'
+        url: '/forecast/week'
       }
     ]
   },
   { 
-    id: 'wydarzenia', 
-    label: 'Wydarzenia polonijne', 
-    icon: Calendar, 
-    gradient: 'from-purple-500/60 to-violet-500/60',
-    glowColor: 'rgba(168, 85, 247, 0.4)',
-    url: 'https://www.polskiewszwecji.com/wydarzenia'
-  },
-  { 
-    id: 'blog', 
-    label: 'Artykuły i blog', 
-    icon: FileText, 
-    gradient: 'from-green-500/60 to-emerald-500/60',
-    glowColor: 'rgba(34, 197, 94, 0.4)',
-    url: 'https://www.polskiewszwecji.com/blog'
-  },
-  { 
-    id: 'onas', 
-    label: 'O nas', 
-    icon: Users, 
-    gradient: 'from-red-500/60 to-rose-500/60',
-    glowColor: 'rgba(239, 68, 68, 0.4)',
-    url: 'https://www.polskiewszwecji.com/o-nas/'
+    id: 'about',
+    label: 'About',
+    icon: FileText,
+    gradient: 'from-white/25 to-white/10',
+    glowColor: 'rgba(255, 255, 255, 0.15)',
+    url: '/about'
   },
 ];

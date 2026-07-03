@@ -14,12 +14,12 @@ export function ColorfulMenu() {
   const handleItemClick = (item: typeof menuItems[0]) => {
     setActiveItem(item.id);
     if (!item.submenu) {
-      window.open(item.url, '_blank', 'noopener,noreferrer');
+      window.location.href = item.url;
     }
   };
 
   const handleSubmenuClick = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.location.href = url;
   };
 
   return (
@@ -81,7 +81,7 @@ export function ColorfulMenu() {
                       <motion.div
                         className="absolute inset-0 backdrop-blur-md bg-white/20 rounded-3xl border border-white/30"
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: isHovered ? 1 : 0 }}
+                        animate={{ opacity: isHovered ? 1 : 0.5 }}
                         transition={{ duration: 0.3 }}
                       />
                     )}
@@ -181,7 +181,7 @@ export function ColorfulMenu() {
                           stiffness: 500,
                           damping: 30
                         }}
-                        className="absolute top-full left-0 mt-2 min-w-[240px] backdrop-blur-2xl bg-white/40 rounded-2xl p-2 shadow-2xl border border-white/40 z-50"
+                        className="absolute top-full left-0 mt-2 min-w-[240px] backdrop-blur-2xl bg-white/40 rounded-2xl p-2 shadow-2xl border border-white/40 z-50 gap-2 flex flex-col"
                       >
                         {item.submenu.map((subItem, subIndex) => {
                           const SubIcon = subItem.icon;
@@ -195,7 +195,7 @@ export function ColorfulMenu() {
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: subIndex * 0.05 }}
-                              className="w-full flex items-center gap-3 p-3 rounded-xl hover:backdrop-blur-xl hover:bg-gradient-to-r hover:from-blue-500/60 hover:to-blue-600/60 transition-all duration-300 text-left group"
+                              className="w-full flex items-center gap-3 p-3 rounded-xl hover:backdrop-blur-xl hover:bg-gradient-to-r hover:from-white/30 hover:to-white/15 transition-all duration-300 text-left group"
                               whileHover={{ x: 4, scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
                             >
