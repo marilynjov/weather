@@ -13,7 +13,7 @@
 }
 
 body {
-  background: #638E96;
+  background: #8DC1CE;
   color: white;
   display: flex;
   align-items: center;
@@ -22,8 +22,3 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-@layer components {
-  button {
-    @apply bg-blue-500 font-bold px-4 py-2 rounded;
-  }
-}
