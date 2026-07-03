@@ -31,7 +31,7 @@ export const menuItems: MenuItem[] = [
     icon: Sun, 
     gradient: 'from-white/25 to-white/10',
     glowColor: 'rgba(255, 255, 255, 0.15)',
-    url: 'http://localhost:3000'
+    url: '/'
   },
   { 
     id: 'forecast', 
