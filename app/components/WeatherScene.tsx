@@ -52,8 +52,10 @@ interface WeatherSceneProps {
   // If provided, skips fetching and uses this data directly
   overrideData?: Partial<WeatherData>;
   query?: string;
+  // Called with the resolved "City, Country" once weather is fetched
+  onResolved?: (location: string) => void;
 }
-export function WeatherScene({ overrideData, query }: WeatherSceneProps) {
+export function WeatherScene({ overrideData, query, onResolved }: WeatherSceneProps) {
   const splineRef = useRef<any>(null);
   const [activeObject, setActiveObject] = useState<string | null>(null);
   const [sceneReady, setSceneReady] = useState(false);
@@ -95,6 +97,7 @@ export function WeatherScene({ overrideData, query }: WeatherSceneProps) {
             localTime: data.location.localtime,
         });
         setActiveObject(objectName);
+        onResolved?.(`${data.location.name}, ${data.location.country}`);
       } catch (err: any) {
         console.error("Weather error:", err.message);
         setError(err.message ?? "Could not load weather.");

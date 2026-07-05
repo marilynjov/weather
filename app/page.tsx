@@ -3,10 +3,12 @@ import { useState } from "react";
 import { ColorfulMenu } from "./components/ColorfulMenu";
 import { WeatherScene } from "./components/WeatherScene";
 import { WeatherTitle } from "./components/WeatherTitle";
+import { Footer } from "./components/Footer";
 
 export default function Page() {
   const [input, setInput] = useState("");
   const [location, setLocation] = useState("");
+  const [usedLocation, setUsedLocation] = useState("");
   return (
     <div className="relative">
       
@@ -27,11 +29,13 @@ export default function Page() {
         className="w-38 h-10 px-5 rounded-full bg-white/50 text-black shadow-2xl border-white/40 outline-none focus:outline-none"></input>
       </div>
       <div className="w-screen overflow-hidden">
-        <WeatherScene query={location}/>
+        <WeatherScene query={location} onResolved={setUsedLocation}/>
       </div>
       <div className="fixed top-13 left-25 z-50">
         <WeatherTitle src="/weather-title.png" alt="My Weather" />
       </div>
+
+      <Footer location={usedLocation} />
     </div>
   );
 }

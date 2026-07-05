@@ -34,7 +34,7 @@ function getDayName(dateStr: string): string {
   return date.toLocaleDateString("en-US", { weekday: "long" });
 }
 
-export function ForecastScene() {
+export function ForecastScene({ onResolved }: { onResolved?: (location: string) => void } = {}) {
   const [forecast, setForecast] = useState<ForecastDay[]>([]);
   const [city, setCity] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -50,6 +50,7 @@ export function ForecastScene() {
         const data = await res.json();
 
         setCity(`${data.location.name}, ${data.location.country}`);
+        onResolved?.(`${data.location.name}, ${data.location.country}`);
 
         const days: ForecastDay[] = data.forecast.forecastday.map((day: any) => ({
           date: day.date,

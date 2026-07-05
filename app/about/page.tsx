@@ -4,6 +4,7 @@ import { ColorfulMenu } from "../components/ColorfulMenu";
 import { motion } from "framer-motion";
 import { Boxes, Atom, Triangle } from "lucide-react";
 import { WeatherTitle } from "../components/WeatherTitle";
+import { Footer } from "../components/Footer";
 
 const tech = [
   {
@@ -88,6 +89,8 @@ export default function AboutPage() {
       <div className="fixed top-13 left-25 z-50">
         <WeatherTitle src="/weather-title.png" alt="My Weather" />
       </div>
+      <Footer location="Not used on this page" />
+      
     </div>
   );
 }

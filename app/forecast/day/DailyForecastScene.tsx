@@ -30,7 +30,7 @@ interface HourSlot {
 
 const ALL_OBJECTS = ["Sun", "Rain", "Cloudy", "SunRain", "Snow", "Storm", "Night"];
 
-export function DailyForecastScene({ query }:{query?: string}) {
+export function DailyForecastScene({ query, onResolved }:{query?: string; onResolved?: (location: string) => void}) {
   const [hours, setHours] = useState<HourSlot[]>([]);
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(true);
@@ -58,6 +58,7 @@ export function DailyForecastScene({ query }:{query?: string}) {
         if (!res.ok) throw new Error("Forecast fetch failed");
         const data = await res.json();
         setCity(`${data.location.name}, ${data.location.country}`);
+        onResolved?.(`${data.location.name}, ${data.location.country}`);
         console.log(data)
 
         const rawHours = data.forecast.forecastday[0].hour;
@@ -174,7 +175,7 @@ export function DailyForecastScene({ query }:{query?: string}) {
   console.log("active", active?.time);
 
   return (
-    <div className="flex flex-col h-screen text-white">
+    <div className="relative flex flex-col h-screen text-white">
 
       {/* WeatherScene takes the full screen and updates with active hour */}
       <div className="relative flex-1">
@@ -199,7 +200,7 @@ export function DailyForecastScene({ query }:{query?: string}) {
       </div>
 
       {/* Timeline pinned to bottom */}
-      <div className="absolute bottom-6 left-0 right-0 px-4 z-20">
+      <div className="absolute bottom-6 left-0 right-0 px-4 z-50">
         <p className="text-xs uppercase tracking-widest opacity-30 mb-3 px-2">
           Drag to explore the day
         </p>
