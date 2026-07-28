@@ -4,8 +4,10 @@ import { ColorfulMenu } from "./components/ColorfulMenu";
 import { WeatherScene } from "./components/WeatherScene";
 import { WeatherTitle } from "./components/WeatherTitle";
 import { Footer } from "./components/Footer";
+import { useI18n } from "./lib/i18n";
 
 export default function Page() {
+  const { t } = useI18n();
   const [input, setInput] = useState("");
   const [location, setLocation] = useState("");
   const [usedLocation, setUsedLocation] = useState("");
@@ -25,7 +27,7 @@ export default function Page() {
               setLocation(input);
             }
           }}
-          placeholder="City..."
+          placeholder={t("common.city")}
         className="w-38 h-10 px-5 rounded-full bg-white/50 text-black shadow-2xl border-white/40 outline-none focus:outline-none"></input>
       </div>
       <div className="w-screen overflow-hidden">

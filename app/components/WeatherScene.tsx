@@ -3,11 +3,24 @@
 import { useRef, useState, useEffect } from "react";
 import Spline from "@splinetool/react-spline";
 import { getLocationQuery } from "../lib/location";
+import { useI18n } from "../lib/i18n";
 
 // Match these EXACTLY to your object names in Spline
 const ALL_OBJECTS = ["Sun", "Rain", "Cloudy", "SunRain", "Snow", "Storm", "Night"];
 
+// Spline objects that are safe to show at night (no sun baked into the asset).
+// Sun, SunRain, Cloudy and Storm all contain a sun, so at night they fall back
+// to the moon ("Night"). Add "Storm" here if your Storm asset has no sun.
+const NIGHT_ALLOWED = ["Night", "Rain", "Snow"];
+
 export function getObjectFromCode(code: number, isDay: number): string {
+  const obj = pickObject(code, isDay);
+  // At night, block any sun-bearing object and show the moon instead.
+  if (!isDay && !NIGHT_ALLOWED.includes(obj)) return "Night";
+  return obj;
+}
+
+function pickObject(code: number, isDay: number): string {
   // Clear — depends on day or night
   if (code === 1000) return isDay ? "Sun" : "Night";
 
@@ -56,7 +69,11 @@ interface WeatherSceneProps {
   onResolved?: (location: string) => void;
 }
 export function WeatherScene({ overrideData, query, onResolved }: WeatherSceneProps) {
+  const { t, lang } = useI18n();
   const splineRef = useRef<any>(null);
+  // Tracks whether we've ever successfully loaded weather, so a failed search
+  // keeps the previous scene instead of resetting to a fallback.
+  const hasDataRef = useRef(false);
   const [activeObject, setActiveObject] = useState<string | null>(null);
   const [sceneReady, setSceneReady] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -69,18 +86,27 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
       try {
         const q = await getLocationQuery(query);
         const res = await fetch(
-          `https://api.weatherapi.com/v1/current.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${encodeURIComponent(q)}`
+          `https://api.weatherapi.com/v1/current.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${encodeURIComponent(q)}&lang=${lang}`
         );
         if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData?.error?.message ?? "Weather fetch failed");
+          const errData = await res.json().catch(() => null);
+          // WeatherAPI code 1006 = "No matching location found"
+          const err: any = new Error(errData?.error?.message ?? "Weather fetch failed");
+          err.apiCode = errData?.error?.code;
+          throw err;
         }
         const data = await res.json();
-        console.log("Weather condition code:", data.current.condition.code, "|", data.current.condition.text);  // ADD THIS
         const code: number = data.current.condition.code;
         const isDay: number = data.current.is_day;
 
         const objectName = getObjectFromCode(code, isDay);
+        console.log(
+          `Weather @ ${data.location.name} (${data.location.localtime}) →`,
+          data.current.condition.text,
+          "| code:", code,
+          "| is_day:", isDay,
+          "| object:", objectName
+        );
 
         setWeatherData({
             temp: data.current.temp_c,
@@ -97,16 +123,21 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
             localTime: data.location.localtime,
         });
         setActiveObject(objectName);
+        setError(null);
+        hasDataRef.current = true;
         onResolved?.(`${data.location.name}, ${data.location.country}`);
       } catch (err: any) {
         console.error("Weather error:", err.message);
-        setError(err.message ?? "Could not load weather.");
-        setActiveObject("Sun");
+        const notFound = err?.apiCode === 1006;
+        setError(notFound ? t("errors.cityNotFound") : t("errors.generic"));
+        // Only fall back to a default scene on the very first load; a failed
+        // search after we already have weather keeps the current scene.
+        if (!hasDataRef.current) setActiveObject("Sun");
       }
     }
 
     fetchWeather();
-  }, [query, overrideData]);
+  }, [query, overrideData, lang]);
 
   useEffect(() => {
     if (!overrideData) return;
@@ -154,7 +185,7 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
     <div className="relative w-screen h-screen">
       {!sceneReady && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
-          <p className="text-white text-lg">Loading...</p>
+          <p className="text-white text-lg">{t("common.loading")}</p>
         </div>
       )}
 
@@ -170,20 +201,20 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
             <p className="capitalize text-xl opacity-80">{weatherData.description}</p>
             
             {/* Feels like */}
-            <p className="text-base opacity-60">Feels like {Math.round(weatherData.feelsLike)}°C</p>
+            <p className="text-base opacity-60">{t("weather.feelsLike", { temp: Math.round(weatherData.feelsLike) })}</p>
 
             {/* Stats row */}
             <div className="flex gap-6 mt-4 text-sm opacity-70">
             <div>
-                <p className="uppercase tracking-wider text-xs opacity-60">Humidity</p>
+                <p className="uppercase tracking-wider text-xs opacity-60">{t("weather.humidity")}</p>
                 <p className="text-lg">{weatherData.humidity}%</p>
             </div>
             <div>
-                <p className="uppercase tracking-wider text-xs opacity-60">Wind</p>
+                <p className="uppercase tracking-wider text-xs opacity-60">{t("weather.wind")}</p>
                 <p className="text-lg">{weatherData.windKph} km/h {weatherData.windDir}</p>
             </div>
             <div>
-                <p className="uppercase tracking-wider text-xs opacity-60">UV Index</p>
+                <p className="uppercase tracking-wider text-xs opacity-60">{t("weather.uv")}</p>
                 <p className="text-lg">{weatherData.uv}</p>
             </div>
             </div>
@@ -194,7 +225,9 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
         )}
 
       {error && (
-        <p className="absolute top-5 left-5 z-10 text-red-400">{error}</p>
+        <div className="absolute top-24 left-1/2 z-50 -translate-x-1/2 rounded-full border border-red-300/40 bg-red-500/80 px-5 py-2 text-sm font-medium text-white shadow-2xl backdrop-blur-xl">
+          {error}
+        </div>
       )}
         
       <Spline

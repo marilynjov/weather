@@ -5,9 +5,11 @@ import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import {menuItems} from '../menuItems'
+import { useI18n } from '../lib/i18n';
 
 
 export function ColorfulMenu() {
+  const { t } = useI18n();
   const [activeItem, setActiveItem] = useState('start');
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
@@ -136,7 +138,7 @@ export function ColorfulMenu() {
                               isActive ? 'text-white drop-shadow-md' : 'text-gray-700'
                             }`}
                           >
-                            {item.label}
+                            {t(`nav.${item.id}`)}
                           </motion.span>
                         )}
                       </AnimatePresence>
@@ -203,7 +205,7 @@ export function ColorfulMenu() {
                                 <SubIcon className="size-4 text-gray-700 group-hover:text-white transition-colors" />
                               </div>
                               <span className="text-sm font-medium text-gray-700 group-hover:text-white transition-colors whitespace-nowrap">
-                                {subItem.label}
+                                {t(`nav.${subItem.id}`)}
                               </span>
                             </motion.button>
                           );

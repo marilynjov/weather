@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n, LanguageSwitcher } from "../lib/i18n";
 
 // Mountain + lake footer image.
 // The image (public/footer.png, 1281x405) is mountains on top, a teal lake on
@@ -13,6 +14,7 @@ const LAKE = "#338596";
 const MADE_BY_ME = ["Sunny", "Cloudy", "Rain", "Storm", "Night"];
 
 export function Footer({ location }: { location?: string }) {
+  const { t } = useI18n();
   const [today, setToday] = useState("");
   const [showPrivacy, setShowPrivacy] = useState(false);
 
@@ -57,20 +59,20 @@ export function Footer({ location }: { location?: string }) {
           {/* Column 3 — legal + feedback */}
           <div>
             <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-70">
-              Privacy &amp; feedback
+              {t("footer.privacyFeedback")}
             </h4>
             <div className="flex flex-col items-center gap-2 text-sm">
               <button
                 onClick={() => setShowPrivacy((v) => !v)}
                 className="underline-offset-4 hover:underline"
               >
-                Privacy policy
+                {t("footer.privacyPolicy")}
               </button>
               <a
-                href="mailto:armandoestruwu@gmail.com?subject=My%20Weather%20feedback"
+                href="mailto:marilynsjf@hotmail.com?subject=My%20Weather%20feedback"
                 className="rounded-full bg-white/20 px-4 py-2 font-medium transition hover:bg-white/30"
               >
-                Send feedback
+                {t("footer.sendFeedback")}
               </a>
             </div>
           </div>
@@ -79,10 +81,10 @@ export function Footer({ location }: { location?: string }) {
           <div>
             <h3 className="mb-3 text-lg font-bold tracking-wide">My Weather</h3>
             <p className="text-sm opacity-80">
-              A personal project built with React, Next.js &amp; Spline.
+              {t("footer.brandDesc")}
             </p>
             <p className="mt-4 text-xs font-semibold uppercase tracking-wider opacity-70">
-              3D objects made by me
+              {t("footer.objectsMadeByMe")}
             </p>
             <p className="mt-1 text-sm opacity-80">{MADE_BY_ME.join(" · ")}</p>
           </div>
@@ -90,7 +92,7 @@ export function Footer({ location }: { location?: string }) {
           {/* Column 4 — social links */}
           <div>
             <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-70">
-              Connect
+              {t("footer.connect")}
             </h4>
             <div className="flex flex-col gap-3 text-sm">
               <a
@@ -119,22 +121,15 @@ export function Footer({ location }: { location?: string }) {
         {showPrivacy && (
           <div className="mx-auto max-w-6xl px-8 pb-8">
             <div className="rounded-2xl bg-white/10 p-5 text-sm leading-relaxed opacity-90">
-              <p className="mb-2 font-semibold">Location &amp; privacy</p>
-              <p>
-                To show local weather, this site requests your approximate
-                location. If you allow it, your browser shares GPS coordinates;
-                if you don&apos;t, an IP-based estimate is used instead. Your
-                coordinates are sent only to WeatherAPI to fetch the forecast —
-                they are never stored on our servers, saved, or shared with
-                anyone else. You can revoke location access at any time in your
-                browser settings.
-              </p>
+              <p className="mb-2 font-semibold">{t("footer.privacyTitle")}</p>
+              <p>{t("footer.privacyBody")}</p>
             </div>
           </div>
         )}
 
-        <div className="border-t border-white/15 py-4 text-center text-xs opacity-70">
-          © {new Date().getFullYear()} Marilyn Joven · Weather data by WeatherAPI
+        <div className="flex flex-col items-center gap-3 border-t border-white/15 py-4 text-center text-xs opacity-70">
+          <LanguageSwitcher />
+          <p>© {new Date().getFullYear()} Marilyn Joven · {t("footer.rights")}</p>
         </div>
       </div>
     </footer>

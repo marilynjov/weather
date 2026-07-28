@@ -5,8 +5,12 @@ import { WeatherTitle } from '@/app/components/WeatherTitle';
 import { ColorfulMenu } from '../../components/ColorfulMenu';
 import { ForecastScene } from './ForecastScene';
 import { Footer } from '@/app/components/Footer';
+import { useI18n } from '@/app/lib/i18n';
 
 export default function ForecastPage() {
+  const { t } = useI18n();
+  const [input, setInput] = useState("");
+  const [location, setLocation] = useState("");
   const [usedLocation, setUsedLocation] = useState("");
   return (
     <div className="relative">
@@ -14,10 +18,20 @@ export default function ForecastPage() {
         <ColorfulMenu />
       </div>
       <div className="fixed top-10 right-20 z-50 backdrop-blur-2xl">
-        <input id="location" type="text" placeholder="City..." className="w-38 h-10 px-5 rounded-full bg-white/50 text-black shadow-2xl border-white/40 outline-none focus:outline-none"></input>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              setLocation(input);
+            }
+          }}
+          placeholder={t("common.city")}
+        className="w-38 h-10 px-5 rounded-full bg-white/50 text-black shadow-2xl border-white/40 outline-none focus:outline-none"></input>
       </div>
       <div className="w-screen overflow-hidden">
-        <ForecastScene onResolved={setUsedLocation} />
+        <ForecastScene query={location} onResolved={setUsedLocation} />
       </div>
       <div className="fixed top-13 left-25 z-50">
         <WeatherTitle src="/weather-title.png" alt="My Weather" />

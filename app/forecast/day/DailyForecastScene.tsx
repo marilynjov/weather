@@ -4,17 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import Spline from "@splinetool/react-spline";
 import { WeatherScene, getObjectFromCode } from "../../components/WeatherScene";
 import { getLocationQuery } from "../../lib/location";
+import { useI18n } from "../../lib/i18n";
 
 
-function getWeatherEmoji(code: number): string {
-  if (code === 1000) return "☀️";
-  if ([1003, 1006, 1009].includes(code)) return "⛅";
+function getWeatherEmoji(code: number, isDay: number = 1): string {
+  const night = !isDay;
+  if (code === 1000) return night ? "🌙" : "☀️";                       // clear: moon at night
+  if ([1003, 1006, 1009].includes(code)) return night ? "☁️" : "⛅";  // cloudy: no sun at night
   if ([1030, 1135, 1147, 1036].includes(code)) return "🌫️";
-  if ([1063, 1150, 1153, 1168, 1171].includes(code)) return "🌦️";
+  if ([1063, 1150, 1153, 1168, 1171].includes(code)) return night ? "🌧️" : "🌦️"; // patchy rain
   if ([1180, 1183, 1186, 1189, 1192, 1195, 1198, 1201, 1240, 1243, 1246].includes(code)) return "🌧️";
   if ([1066, 1114, 1117, 1204, 1207, 1210, 1213, 1216, 1219, 1222, 1225, 1237, 1249, 1252, 1255, 1258, 1261, 1264].includes(code)) return "❄️";
   if ([1087, 1273, 1276, 1279, 1282].includes(code)) return "⛈️";
-  return "🌤️";
+  return night ? "☁️" : "🌤️";                                        // fallback: cloud at night
 }
 
 interface HourSlot {
@@ -31,6 +33,7 @@ interface HourSlot {
 const ALL_OBJECTS = ["Sun", "Rain", "Cloudy", "SunRain", "Snow", "Storm", "Night"];
 
 export function DailyForecastScene({ query, onResolved }:{query?: string; onResolved?: (location: string) => void}) {
+  const { t, lang } = useI18n();
   const [hours, setHours] = useState<HourSlot[]>([]);
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(true);
@@ -53,13 +56,18 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
       try {
         const q = await getLocationQuery(query);
         const res = await fetch(
-          `https://api.weatherapi.com/v1/forecast.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${encodeURIComponent(q)}&days=1`
+          `https://api.weatherapi.com/v1/forecast.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${encodeURIComponent(q)}&days=1&lang=${lang}`
         );
-        if (!res.ok) throw new Error("Forecast fetch failed");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          const err: any = new Error(errData?.error?.message ?? "Forecast fetch failed");
+          err.apiCode = errData?.error?.code; // 1006 = no matching location
+          throw err;
+        }
         const data = await res.json();
+        setError(null);
         setCity(`${data.location.name}, ${data.location.country}`);
         onResolved?.(`${data.location.name}, ${data.location.country}`);
-        console.log(data)
 
         const rawHours = data.forecast.forecastday[0].hour;
         const slots: HourSlot[] = rawHours.map((h: any) => {
@@ -83,13 +91,14 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
         const currentHour = new Date().getHours();
         setActiveIndex(Math.min(currentHour, slots.length - 1));
       } catch (err: any) {
-        setError(err.message);
+        const notFound = err?.apiCode === 1006;
+        setError(notFound ? t("errors.cityNotFound") : t("errors.generic"));
       } finally {
         setLoading(false);
       }
     }
     fetchHourly();
-  }, [query]);
+  }, [query, lang]);
 
   // Apply correct Spline object when active slot or scene changes
   useEffect(() => {
@@ -161,21 +170,26 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen text-white opacity-60">
-      Loading...
+      {t("common.loading")}
     </div>
   );
 
-  if (error) return (
+  // Only take over the whole screen if we've never loaded any data.
+  if (error && hours.length === 0) return (
     <div className="flex items-center justify-center h-screen text-red-400">
       {error}
     </div>
   );
 
-  console.log("render activeIndex", activeIndex);
-  console.log("active", active?.time);
-
   return (
     <div className="relative flex flex-col h-screen text-white">
+
+      {/* Non-blocking error badge (e.g. city not found) — keeps the current day */}
+      {error && (
+        <div className="absolute top-24 left-1/2 z-50 -translate-x-1/2 rounded-full border border-red-300/40 bg-red-500/80 px-5 py-2 text-sm font-medium text-white shadow-2xl backdrop-blur-xl">
+          {error}
+        </div>
+      )}
 
       {/* WeatherScene takes the full screen and updates with active hour */}
       <div className="relative flex-1">
@@ -202,7 +216,7 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
       {/* Timeline pinned to bottom */}
       <div className="absolute bottom-6 left-0 right-0 px-4 z-50">
         <p className="text-xs uppercase tracking-widest opacity-30 mb-3 px-2">
-          Drag to explore the day
+          {t("daily.drag")}
         </p>
         <div
           ref={trackRef}
@@ -228,7 +242,7 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
               }}
             >
               <span className="text-xs opacity-50">{slot.time}</span>
-              <span className="text-lg">{getWeatherEmoji(slot.code)}</span>
+              <span className="text-lg">{getWeatherEmoji(slot.code, slot.isDay)}</span>
               <span className="text-sm font-bold">{Math.round(slot.temp)}°</span>
               {slot.rain > 0 && <span className="text-xs opacity-40">💧{slot.rain}%</span>}
             </button>
