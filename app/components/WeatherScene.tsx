@@ -89,12 +89,18 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
   // keeps the previous scene instead of resetting to a fallback.
   const hasDataRef = useRef(false);
   const [activeObject, setActiveObject] = useState<string | null>(null);
+  // Mirror of activeObject readable inside onLoad's closure (which is stale).
+  const activeObjectRef = useRef<string | null>(null);
+  activeObjectRef.current = activeObject;
   const [sceneReady, setSceneReady] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   // The 3D scene is desktop-only; on mobile we skip Spline and just show data.
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Bumped whenever we (re)enter desktop, forcing a brand-new Spline instance
+  // — a fresh mount whose onLoad re-fires, exactly like a page reload does.
+  const [sceneKey, setSceneKey] = useState(0);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -185,6 +191,14 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
     }
   }, [sceneReady, activeObject]);
 
+  // On each transition into desktop, tear down the old scene and force a fresh
+  // Spline instance (new key) so it loads clean like a reload.
+  useEffect(() => {
+    setSceneReady(false);
+    splineRef.current = null;
+    if (showSpline) setSceneKey((k) => k + 1);
+  }, [showSpline]);
+
   function applyWeather(splineApp: any, targetName: string) {
     ALL_OBJECTS.forEach((name) => {
       const obj = splineApp.findObjectByName(name);
@@ -205,7 +219,12 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
     splineRef.current = splineApp;
 
     setTimeout(() => {
-        setSceneReady(true);
+        // Apply the current object here too — on a remount the [sceneReady,
+        // activeObject] effect may not re-fire, so onLoad guarantees the apply.
+        if (activeObjectRef.current) applyWeather(splineApp, activeObjectRef.current);
+        // Hold the loading overlay a bit longer so the object finishes rendering
+        // before we reveal it (avoids a pop-in of the object).
+        setTimeout(() => setSceneReady(true), 600);
     }, 500);
     }
 
@@ -263,6 +282,7 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
       {showSpline && (
         <div className="absolute inset-0 z-0 md:h-screen">
           <Spline
+            key={sceneKey}
             scene="https://prod.spline.design/1v-Ckv8X81GI80su/scene.splinecode"
             onLoad={onLoad}
           />

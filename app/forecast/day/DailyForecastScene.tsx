@@ -216,7 +216,7 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
             overrideData={{
               temp: active.temp,
               feelsLike: active.temp,        // hourly API doesn't return feelslike, use temp as fallback
-              description: active.objectName.replace(/([A-Z])/g, ' $1').trim(),
+              description: t(`obj.${active.objectName}`),
               code: active.code,
               isDay: active.isDay,
               humidity: 0,                   // not in hourly slot — add if you want

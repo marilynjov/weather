@@ -36,6 +36,14 @@ const DICT: Record<Lang, Record<string, string>> = {
     "week.tomorrow": "Tomorrow",
     "week.tapHint": "Tap a day to see it hour by hour",
 
+    "obj.Sun": "Sunny",
+    "obj.Rain": "Rain",
+    "obj.Cloudy": "Cloudy",
+    "obj.SunRain": "Sun & rain",
+    "obj.Snow": "Snow",
+    "obj.Storm": "Storm",
+    "obj.Night": "Clear night",
+
     "footer.brandDesc": "A personal project built with React, Next.js & Spline.",
     "footer.objectsMadeByMe": "3D objects made by me",
     "footer.thisSession": "This session",
@@ -90,6 +98,14 @@ const DICT: Record<Lang, Record<string, string>> = {
     "week.tomorrow": "Mañana",
     "week.tapHint": "Toca un día para verlo hora por hora",
 
+    "obj.Sun": "Soleado",
+    "obj.Rain": "Lluvia",
+    "obj.Cloudy": "Nublado",
+    "obj.SunRain": "Sol y lluvia",
+    "obj.Snow": "Nieve",
+    "obj.Storm": "Tormenta",
+    "obj.Night": "Noche despejada",
+
     "footer.brandDesc": "Un proyecto hecho con React, Next.js y Spline.",
     "footer.objectsMadeByMe": "Objetos 3D hechos por mí",
     "footer.thisSession": "Esta sesión",
@@ -130,21 +146,35 @@ interface I18nValue {
 
 const I18nContext = createContext<I18nValue | null>(null);
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+export function I18nProvider({
+  children,
+  initialLang,
+}: {
+  children: ReactNode;
+  initialLang?: Lang;
+}) {
+  // Seed from the server-read cookie so the first paint is already correct
+  // (no "Loading" → "Cargando" flash for returning users).
+  const [lang, setLangState] = useState<Lang>(initialLang ?? "en");
 
-  // Load the saved choice (or the browser's language) after mount to keep the
-  // server-rendered markup and first client render in sync (both "en").
+  // Only detect the browser language for brand-new visitors (no saved choice).
   useEffect(() => {
     const saved = localStorage.getItem("lang") as Lang | null;
-    const initial: Lang =
-      saved ?? (navigator.language.toLowerCase().startsWith("es") ? "es" : "en");
-    setLangState(initial);
-  }, []);
+    const resolved: Lang =
+      saved ??
+      initialLang ??
+      (navigator.language.toLowerCase().startsWith("es") ? "es" : "en");
+    setLangState((prev) => (resolved !== prev ? resolved : prev));
+    // Persist so the server renders the right language on the next request.
+    localStorage.setItem("lang", resolved);
+    document.cookie = `lang=${resolved};path=/;max-age=31536000;samesite=lax`;
+  }, [initialLang]);
 
   const setLang = (l: Lang) => {
     setLangState(l);
     localStorage.setItem("lang", l);
+    // Cookie lets the server render the right language on the next request.
+    document.cookie = `lang=${l};path=/;max-age=31536000;samesite=lax`;
     document.documentElement.lang = l;
   };
 
