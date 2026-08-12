@@ -39,6 +39,8 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Which timeline edges have hidden chips → only fade those sides
+  const [edges, setEdges] = useState({ atStart: true, atEnd: false });
 
   // Spline
   const splineRef = useRef<any>(null);
@@ -117,6 +119,22 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
     });
   }, [activeIndex]);
 
+  // Track whether each edge has hidden chips so we only fade scrollable sides
+  function updateEdges() {
+    const el = trackRef.current;
+    if (!el) return;
+    setEdges({
+      atStart: el.scrollLeft <= 1,
+      atEnd: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1,
+    });
+  }
+
+  useEffect(() => {
+    updateEdges();
+    window.addEventListener("resize", updateEdges);
+    return () => window.removeEventListener("resize", updateEdges);
+  }, [hours]);
+
   function applyWeather(splineApp: any, targetName: string) {
     ALL_OBJECTS.forEach((name) => {
       const obj = splineApp.findObjectByName(name);
@@ -169,7 +187,7 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
   const active = hours[activeIndex];
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen text-white opacity-60">
+    <div className="flex items-center justify-center h-screen text-white text-lg">
       {t("common.loading")}
     </div>
   );
@@ -182,7 +200,7 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
   );
 
   return (
-    <div className="relative flex flex-col h-screen text-white">
+    <div className="relative flex flex-col text-white md:h-screen">
 
       {/* Non-blocking error badge (e.g. city not found) — keeps the current day */}
       {error && (
@@ -192,7 +210,7 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
       )}
 
       {/* WeatherScene takes the full screen and updates with active hour */}
-      <div className="relative flex-1">
+      <div className="relative md:flex-1">
         {active && (
           <WeatherScene
             overrideData={{
@@ -213,15 +231,21 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
         )}
       </div>
 
-      {/* Timeline pinned to bottom */}
-      <div className="absolute bottom-6 left-0 right-0 px-4 z-50">
-        <p className="text-xs uppercase tracking-widest opacity-30 mb-3 px-2">
+      {/* Timeline — in the column on mobile, pinned to the bottom on desktop */}
+      <div className="text-shadow-soft relative py-6 md:absolute md:bottom-6 md:py-0 left-0 right-0 px-4 z-50">
+        <p className="text-shadow-soft text-sm uppercase tracking-widest text-white mb-3 px-2">
           {t("daily.drag")}
         </p>
         <div
           ref={trackRef}
           className="flex gap-2 overflow-x-auto pb-2 cursor-grab active:cursor-grabbing select-none"
-          style={{ scrollbarWidth: "none" }}
+          style={{
+            scrollbarWidth: "none",
+            // Fade only the sides that still have hidden chips (not the true start/end)
+            WebkitMaskImage: `linear-gradient(to right, ${edges.atStart ? "black" : "transparent"} 0, black 6%, black 94%, ${edges.atEnd ? "black" : "transparent"} 100%)`,
+            maskImage: `linear-gradient(to right, ${edges.atStart ? "black" : "transparent"} 0, black 6%, black 94%, ${edges.atEnd ? "black" : "transparent"} 100%)`,
+          }}
+          onScroll={updateEdges}
           onMouseDown={onMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
@@ -236,15 +260,17 @@ export function DailyForecastScene({ query, onResolved }:{query?: string; onReso
               className="flex flex-col items-center gap-1 px-3 py-3 rounded-2xl flex-shrink-0 transition-all duration-300"
               style={{
                 width: "88px",
-                background: i === activeIndex ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.06)",
-                border: i === activeIndex ? "1px solid rgba(255,255,255,0.4)" : "1px solid transparent",
-                backdropFilter: "blur(10px)",
+                background: i === activeIndex ? "rgba(31,109,146,0.78)" : "rgba(31,109,146,0.42)",
+                border: i === activeIndex ? "1px solid rgba(255,255,255,0.75)" : "1px solid rgba(255,255,255,0.30)",
+                backdropFilter: "blur(18px)",
+                WebkitBackdropFilter: "blur(18px)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)",
               }}
             >
-              <span className="text-xs opacity-50">{slot.time}</span>
-              <span className="text-lg">{getWeatherEmoji(slot.code, slot.isDay)}</span>
-              <span className="text-sm font-bold">{Math.round(slot.temp)}°</span>
-              {slot.rain > 0 && <span className="text-xs opacity-40">💧{slot.rain}%</span>}
+              <span className="text-sm text-white">{slot.time}</span>
+              <span className="text-xl">{getWeatherEmoji(slot.code, slot.isDay)}</span>
+              <span className="text-base font-bold text-white">{Math.round(slot.temp)}°</span>
+              {slot.rain > 0 && <span className="text-xs text-white">💧{slot.rain}%</span>}
             </button>
           ))}
         </div>

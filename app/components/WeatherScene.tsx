@@ -5,6 +5,20 @@ import Spline from "@splinetool/react-spline";
 import { getLocationQuery } from "../lib/location";
 import { useI18n } from "../lib/i18n";
 
+// Retry a fetch to ride out transient network blips. A bare "Failed to fetch"
+// TypeError means the request never completed (offline moment, blocked, etc.).
+async function fetchWithRetry(url: string, attempts = 2): Promise<Response> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fetch(url);
+    } catch (e) {
+      if (i === attempts - 1) throw e;
+      await new Promise((r) => setTimeout(r, 600));
+    }
+  }
+  throw new Error("unreachable");
+}
+
 // Match these EXACTLY to your object names in Spline
 const ALL_OBJECTS = ["Sun", "Rain", "Cloudy", "SunRain", "Snow", "Storm", "Night"];
 
@@ -78,6 +92,20 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
   const [sceneReady, setSceneReady] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The 3D scene is desktop-only; on mobile we skip Spline and just show data.
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    setMounted(true);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  const showSpline = mounted && !isMobile;
 
   useEffect(() => {
     if (overrideData) return;
@@ -85,7 +113,7 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
     async function fetchWeather() {
       try {
         const q = await getLocationQuery(query);
-        const res = await fetch(
+        const res = await fetchWithRetry(
           `https://api.weatherapi.com/v1/current.json?key=${process.env.NEXT_PUBLIC_WEATHER_API_KEY}&q=${encodeURIComponent(q)}&lang=${lang}`
         );
         if (!res.ok) {
@@ -182,45 +210,45 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
     }
 
   return (
-    <div className="relative w-screen h-screen">
-      {!sceneReady && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
+    <div className="relative flex w-full flex-col md:block md:h-screen">
+      {showSpline && !sceneReady && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black">
           <p className="text-white text-lg">{t("common.loading")}</p>
         </div>
       )}
 
-      {weatherData && sceneReady && (
-        <div className="absolute left-0 top-0 z-10 h-screen flex flex-col justify-center px-30">
+      {weatherData && (isMobile || sceneReady) && (
+        <div className="text-shadow-soft relative z-10 order-1 flex flex-col items-center px-6 pt-10 pb-6 text-center md:absolute md:left-0 md:top-0 md:order-none md:h-screen md:items-start md:justify-center md:px-30 md:py-0 md:text-left">
 
-            
+
             {/* Location */}
-            <p className="text-lg uppercase tracking-widest opacity-70">{weatherData.city}, {weatherData.country}</p>
-            
+            <p className="text-lg md:text-xl uppercase tracking-widest text-white">{weatherData.city}, {weatherData.country}</p>
+
             {/* Main temp */}
-            <h1 className="text-8xl font-bold">{Math.round(weatherData.temp)}°C</h1>
-            <p className="capitalize text-xl opacity-80">{weatherData.description}</p>
-            
+            <h1 className="text-7xl md:text-9xl font-bold text-white">{Math.round(weatherData.temp)}°C</h1>
+            <p className="capitalize text-xl md:text-2xl text-white">{weatherData.description}</p>
+
             {/* Feels like */}
-            <p className="text-base opacity-60">{t("weather.feelsLike", { temp: Math.round(weatherData.feelsLike) })}</p>
+            <p className="text-lg text-white">{t("weather.feelsLike", { temp: Math.round(weatherData.feelsLike) })}</p>
 
             {/* Stats row */}
-            <div className="flex gap-6 mt-4 text-sm opacity-70">
+            <div className="flex flex-wrap justify-center gap-6 mt-5 text-base text-white md:justify-start">
             <div>
-                <p className="uppercase tracking-wider text-xs opacity-60">{t("weather.humidity")}</p>
-                <p className="text-lg">{weatherData.humidity}%</p>
+                <p className="uppercase tracking-wider text-sm text-white">{t("weather.humidity")}</p>
+                <p className="text-xl">{weatherData.humidity}%</p>
             </div>
             <div>
-                <p className="uppercase tracking-wider text-xs opacity-60">{t("weather.wind")}</p>
-                <p className="text-lg">{weatherData.windKph} km/h {weatherData.windDir}</p>
+                <p className="uppercase tracking-wider text-sm text-white">{t("weather.wind")}</p>
+                <p className="text-xl">{weatherData.windKph} km/h {weatherData.windDir}</p>
             </div>
             <div>
-                <p className="uppercase tracking-wider text-xs opacity-60">{t("weather.uv")}</p>
-                <p className="text-lg">{weatherData.uv}</p>
+                <p className="uppercase tracking-wider text-sm text-white">{t("weather.uv")}</p>
+                <p className="text-xl">{weatherData.uv}</p>
             </div>
             </div>
 
             {/* Local time */}
-            <p className="text-xs opacity-40 mt-2">{weatherData.localTime}</p>
+            <p className="text-sm text-white mt-2">{weatherData.localTime}</p>
         </div>
         )}
 
@@ -229,11 +257,17 @@ export function WeatherScene({ overrideData, query, onResolved }: WeatherScenePr
           {error}
         </div>
       )}
-        
-      <Spline
-        scene="https://prod.spline.design/1v-Ckv8X81GI80su/scene.splinecode"
-        onLoad={onLoad}
-      />
+
+      {/* 3D scene — desktop only. On mobile it's skipped entirely (Spline's
+          camera is framed for wide screens and looks oversized on phones). */}
+      {showSpline && (
+        <div className="absolute inset-0 z-0 md:h-screen">
+          <Spline
+            scene="https://prod.spline.design/1v-Ckv8X81GI80su/scene.splinecode"
+            onLoad={onLoad}
+          />
+        </div>
+      )}
     </div>
   );
 }

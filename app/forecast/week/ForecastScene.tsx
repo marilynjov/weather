@@ -109,7 +109,7 @@ export function ForecastScene({ query, onResolved }: {query?: string; onResolved
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen">
-      <p className="text-white opacity-60">{t("week.loading")}</p>
+      <p className="text-white text-lg">{t("week.loading")}</p>
     </div>
   );
 
@@ -121,7 +121,7 @@ export function ForecastScene({ query, onResolved }: {query?: string; onResolved
   );
 
   return (
-    <div className="relative flex flex-col h-screen px-20 py-20 text-white">
+    <div className="relative flex flex-col px-6 py-10 text-white md:h-screen md:px-20 md:py-20">
 
       {/* Non-blocking error badge (e.g. city not found) — keeps the current forecast */}
       {error && (
@@ -131,9 +131,9 @@ export function ForecastScene({ query, onResolved }: {query?: string; onResolved
       )}
 
       {/* Header */}
-      <div className="mb-8 py-8">
-        <h1 className="text-4xl font-bold">{city}</h1>
-        <p className="mt-1 text-xs uppercase tracking-widest opacity-40">{t("week.tapHint")}</p>
+      <div className="text-shadow-soft mb-8 py-8">
+        <h1 className="text-5xl font-bold text-white">{city}</h1>
+        <p className="mt-1 text-sm uppercase tracking-widest text-white">{t("week.tapHint")}</p>
       </div>
 
       {/* Forecast rows */}
@@ -144,35 +144,41 @@ export function ForecastScene({ query, onResolved }: {query?: string; onResolved
             <div key={day.date}>
               <button
                 onClick={() => setExpandedDate(open ? null : day.date)}
-                className="w-full flex items-center justify-between px-6 py-4 rounded-2xl transition hover:brightness-105"
-                style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)" }}
+                className="w-full flex items-center justify-between px-4 py-4 rounded-2xl transition hover:brightness-110 md:px-6"
+                style={{
+                  background: "rgba(31,109,146,0.42)",
+                  border: "1px solid rgba(255,255,255,0.25)",
+                  backdropFilter: "blur(18px)",
+                  WebkitBackdropFilter: "blur(18px)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35)",
+                }}
               >
                 {/* Day name */}
-                <span className="w-28 text-left font-medium text-lg">
+                <span className="w-16 shrink-0 text-left text-base font-medium text-white md:w-28 md:text-xl">
                   {getDayName(day.date, t, lang)}
                 </span>
 
                 {/* Emoji + description */}
-                <div className="flex items-center gap-3 flex-1 px-4">
-                  <span className="text-2xl">{getWeatherEmoji(day.code)}</span>
-                  <span className="text-sm opacity-60 capitalize">{day.description}</span>
+                <div className="flex min-w-0 flex-1 items-center gap-2 px-2 md:gap-3 md:px-4">
+                  <span className="text-3xl">{getWeatherEmoji(day.code)}</span>
+                  <span className="truncate text-base capitalize text-white hidden sm:inline">{day.description}</span>
                 </div>
 
                 {/* Rain chance */}
                 {day.chanceOfRain > 0 && (
-                  <span className="text-sm opacity-50 w-16 text-right">
+                  <span className="hidden text-base text-white w-16 text-right sm:inline">
                     💧 {day.chanceOfRain}%
                   </span>
                 )}
 
                 {/* Temp range */}
-                <div className="flex gap-2 text-right w-24 justify-end">
-                  <span className="font-bold">{Math.round(day.maxTemp)}°</span>
-                  <span className="opacity-40">{Math.round(day.minTemp)}°</span>
+                <div className="flex shrink-0 gap-2 text-right w-20 justify-end text-lg md:w-24">
+                  <span className="font-bold text-white">{Math.round(day.maxTemp)}°</span>
+                  <span className="text-white">{Math.round(day.minTemp)}°</span>
                 </div>
 
                 {/* Expand indicator */}
-                <span className={`ml-3 text-xs opacity-50 transition-transform ${open ? "rotate-180" : ""}`}>
+                <span className={`ml-3 text-sm text-white transition-transform ${open ? "rotate-180" : ""}`}>
                   ▾
                 </span>
               </button>
@@ -183,13 +189,20 @@ export function ForecastScene({ query, onResolved }: {query?: string; onResolved
                   {day.hours.map((h) => (
                     <div
                       key={h.time}
-                      className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 flex-shrink-0"
-                      style={{ width: "68px", background: "rgba(255,255,255,0.06)" }}
+                      className="flex flex-col items-center gap-1 px-3 py-3 rounded-2xl flex-shrink-0 transition-all duration-300"
+                      style={{
+                        width: "88px",
+                        background: "rgba(31,109,146,0.42)",
+                        border: "1px solid rgba(255,255,255,0.30)",
+                        backdropFilter: "blur(18px)",
+                        WebkitBackdropFilter: "blur(18px)",
+                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.4)",
+                      }}
                     >
-                      <span className="text-xs opacity-50">{h.time}</span>
-                      <span className="text-lg">{getWeatherEmoji(h.code, h.isDay)}</span>
-                      <span className="text-sm font-bold">{Math.round(h.temp)}°</span>
-                      {h.rain > 0 && <span className="text-[10px] opacity-40">💧{h.rain}%</span>}
+                      <span className="text-sm text-white">{h.time}</span>
+                      <span className="text-xl">{getWeatherEmoji(h.code, h.isDay)}</span>
+                      <span className="text-base font-bold text-white">{Math.round(h.temp)}°</span>
+                      {h.rain > 0 && <span className="text-xs text-white">💧{h.rain}%</span>}
                     </div>
                   ))}
                 </div>

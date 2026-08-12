@@ -13,11 +13,18 @@ export default function DayForecastPage() {
   const [location, setLocation] = useState("")
   const [usedLocation, setUsedLocation] = useState("")
   return (
-    <div className="relative">
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 z-50">
-        <ColorfulMenu />
+    <div className="relative flex flex-col md:block">
+
+      {/* Title — centered in column on mobile, fixed corner on desktop */}
+      <div className="flex justify-center pt-6 md:fixed md:top-13 md:left-25 md:z-50 md:pt-0">
+        <WeatherTitle src="/weather-title.png" alt="My Weather" />
       </div>
-      <div className="fixed top-10 right-20 z-50 backdrop-blur-2xl">
+
+      {/* Menu — self-positioning */}
+      <ColorfulMenu />
+
+      {/* City search */}
+      <div className="flex justify-center px-6 pb-2 md:fixed md:top-10 md:right-20 md:z-50 md:px-0 md:pb-0">
         <input
           type="text"
           value={input}
@@ -28,16 +35,15 @@ export default function DayForecastPage() {
             }
           }}
           placeholder={t("common.city")}
-        className="w-38 h-10 px-5 rounded-full bg-white/50 text-black shadow-2xl border-white/40 outline-none focus:outline-none"></input>
+        className="w-full max-w-xs md:w-38 h-10 px-5 rounded-full bg-white/50 text-black shadow-2xl border-white/40 outline-none focus:outline-none"></input>
       </div>
-      <div className="w-screen overflow-hidden">
+
+      <div className="w-full overflow-x-hidden">
         <DailyForecastScene query={location} onResolved={setUsedLocation}/>
       </div>
-      <div className="fixed top-13 left-25 z-50">
-        <WeatherTitle src="/weather-title.png" alt="My Weather" />
-      </div>
+
       <Footer location={usedLocation} />
-      
+
     </div>
   );
 }

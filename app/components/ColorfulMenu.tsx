@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import {menuItems} from '../menuItems'
@@ -12,6 +12,7 @@ export function ColorfulMenu() {
   const { t } = useI18n();
   const [activeItem, setActiveItem] = useState('start');
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleItemClick = (item: typeof menuItems[0]) => {
     setActiveItem(item.id);
@@ -25,7 +26,8 @@ export function ColorfulMenu() {
   };
 
   return (
-    <nav className="p-6">
+    <>
+    <nav className="hidden md:block fixed top-0 left-1/2 -translate-x-1/2 z-50 p-6">
       <div className="flex items-center justify-center">
         {/* Desktop Menu */}
         <div className="backdrop-blur-2xl bg-white/30 rounded-full px-4 py-3 shadow-2xl border border-white/40">
@@ -220,5 +222,87 @@ export function ColorfulMenu() {
         </div>
       </div>
     </nav>
+
+    {/* Mobile hamburger — sits in the column flow */}
+    <div className="md:hidden flex justify-center py-3">
+      <button
+        onClick={() => setDrawerOpen(true)}
+        aria-label="Open menu"
+        className="flex items-center gap-2 rounded-full border border-white/40 bg-white/30 px-5 py-2.5 text-gray-800 shadow-2xl backdrop-blur-2xl"
+      >
+        <Menu className="size-5" />
+        <span className="font-medium">Menu</span>
+      </button>
+    </div>
+
+    {/* Mobile slide-in side drawer */}
+    <AnimatePresence>
+      {drawerOpen && (
+        <div className="md:hidden fixed inset-0 z-[70]">
+          <motion.div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setDrawerOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+          <motion.aside
+            className="absolute left-0 top-0 flex h-full w-72 max-w-[80%] flex-col gap-1 bg-white/80 p-6 shadow-2xl backdrop-blur-2xl"
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+          >
+            <button
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close menu"
+              className="mb-2 self-end rounded-full p-2 text-gray-700 hover:bg-white/60"
+            >
+              <X className="size-5" />
+            </button>
+
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              if (item.submenu) {
+                return (
+                  <div key={item.id} className="mb-1">
+                    <div className="flex items-center gap-3 px-4 py-2 text-gray-800">
+                      <Icon className="size-5" />
+                      <span className="font-semibold">{t(`nav.${item.id}`)}</span>
+                    </div>
+                    <div className="ml-4 flex flex-col">
+                      {item.submenu.map((sub) => {
+                        const SubIcon = sub.icon;
+                        return (
+                          <button
+                            key={sub.id}
+                            onClick={() => handleSubmenuClick(sub.url)}
+                            className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-left text-gray-700 hover:bg-white/60"
+                          >
+                            <SubIcon className="size-4" />
+                            <span className="text-sm font-medium">{t(`nav.${sub.id}`)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleSubmenuClick(item.url)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-800 hover:bg-white/60"
+                >
+                  <Icon className="size-5" />
+                  <span className="font-medium">{t(`nav.${item.id}`)}</span>
+                </button>
+              );
+            })}
+          </motion.aside>
+        </div>
+      )}
+    </AnimatePresence>
+    </>
   );
 }

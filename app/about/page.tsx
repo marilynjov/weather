@@ -16,25 +16,30 @@ const tech = [
 export default function AboutPage() {
   const { t } = useI18n();
   return (
-    <div className="relative min-h-screen w-screen overflow-hidden text-white">
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 z-50">
-        <ColorfulMenu />
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden text-white md:block">
+
+      {/* Title — centered in column on mobile, fixed corner on desktop */}
+      <div className="flex justify-center pt-6 md:fixed md:top-13 md:left-25 md:z-50 md:pt-0">
+        <WeatherTitle src="/weather-title.png" alt="My Weather" />
       </div>
 
-      <div className="flex min-h-screen flex-col items-center justify-center px-6 py-32">
+      {/* Menu — self-positioning */}
+      <ColorfulMenu />
+
+      <div className="flex flex-col items-center justify-center px-6 py-16 md:min-h-screen md:py-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="max-w-2xl text-center"
+          className="text-shadow-soft max-w-2xl text-center"
         >
           <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">{t("about.title")}</h1>
-          <p className="mt-6 text-lg leading-relaxed opacity-90">
+          <p className="mt-6 text-xl leading-relaxed text-white">
             {t("about.intro")}
           </p>
         </motion.div>
 
-        <div className="mt-14 grid w-full max-w-3xl gap-5 sm:grid-cols-3">
+        <div className="text-shadow-soft mt-14 grid w-full max-w-3xl gap-5 sm:grid-cols-3">
           {tech.map((item, index) => {
             const Icon = item.icon;
             return (
@@ -53,8 +58,8 @@ export default function AboutPage() {
                 <div className="mb-4 inline-flex rounded-2xl bg-white/30 p-3">
                   <Icon className="size-6" />
                 </div>
-                <h2 className="text-lg font-semibold">{t(item.titleKey)}</h2>
-                <p className="mt-2 text-sm leading-relaxed opacity-90">
+                <h2 className="text-xl font-semibold text-white">{t(item.titleKey)}</h2>
+                <p className="mt-2 text-base leading-relaxed text-white">
                   {t(item.descKey)}
                 </p>
               </motion.div>
@@ -66,13 +71,10 @@ export default function AboutPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="mt-14 text-sm uppercase tracking-widest opacity-60"
+          className="text-shadow-soft mt-14 text-base uppercase tracking-widest text-white"
         >
           {t("about.madeWith")}
         </motion.p>
-      </div>
-      <div className="fixed top-13 left-25 z-50">
-        <WeatherTitle src="/weather-title.png" alt="My Weather" />
       </div>
       <Footer location={t("footer.notUsedHere")} />
       

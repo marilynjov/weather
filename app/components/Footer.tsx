@@ -42,7 +42,7 @@ export function Footer({ location }: { location?: string }) {
 
           {/* Column 2 — session info */}
           {/* <div>
-            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-70">
+            <h4 className="mb-3 text-base font-semibold uppercase tracking-wider text-white">
               This session
             </h4>
             <ul className="space-y-2 text-sm opacity-90">
@@ -58,10 +58,10 @@ export function Footer({ location }: { location?: string }) {
 
           {/* Column 3 — legal + feedback */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-70">
+            <h4 className="mb-3 text-base font-semibold uppercase tracking-wider text-white">
               {t("footer.privacyFeedback")}
             </h4>
-            <div className="flex flex-col items-center gap-2 text-sm">
+            <div className="flex flex-col items-center gap-2 text-base">
               <button
                 onClick={() => setShowPrivacy((v) => !v)}
                 className="underline-offset-4 hover:underline"
@@ -79,19 +79,19 @@ export function Footer({ location }: { location?: string }) {
 
           {/* Column 1 — brand + 3D objects made by me */}
           <div>
-            <h3 className="mb-3 text-lg font-bold tracking-wide">My Weather</h3>
-            <p className="text-sm opacity-80">
+            <h3 className="mb-3 text-xl font-bold tracking-wide text-white">My Weather</h3>
+            <p className="text-base text-white">
               {t("footer.brandDesc")}
             </p>
-            <p className="mt-4 text-xs font-semibold uppercase tracking-wider opacity-70">
+            <p className="mt-4 text-sm font-semibold uppercase tracking-wider text-white">
               {t("footer.objectsMadeByMe")}
             </p>
-            <p className="mt-1 text-sm opacity-80">{MADE_BY_ME.join(" · ")}</p>
+            <p className="mt-1 text-base text-white">{MADE_BY_ME.join(" · ")}</p>
           </div>
 
           {/* Column 4 — social links */}
           <div>
-            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider opacity-70">
+            <h4 className="mb-3 text-base font-semibold uppercase tracking-wider text-white">
               {t("footer.connect")}
             </h4>
             <div className="flex flex-col gap-3 text-sm">
@@ -99,7 +99,7 @@ export function Footer({ location }: { location?: string }) {
                 href="https://github.com/marilynjov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 opacity-90 transition hover:opacity-100"
+                className="flex items-center gap-2 text-base text-white transition hover:opacity-80"
               >
                 <GithubIcon />
                 GitHub
@@ -108,7 +108,7 @@ export function Footer({ location }: { location?: string }) {
                 href="https://www.linkedin.com/in/marilyn-stephany-joven"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 opacity-90 transition hover:opacity-100"
+                className="flex items-center gap-2 text-base text-white transition hover:opacity-80"
               >
                 <LinkedinIcon />
                 LinkedIn
@@ -120,14 +120,14 @@ export function Footer({ location }: { location?: string }) {
         {/* Expandable privacy statement */}
         {showPrivacy && (
           <div className="mx-auto max-w-6xl px-8 pb-8">
-            <div className="rounded-2xl bg-white/10 p-5 text-sm leading-relaxed opacity-90">
+            <div className="rounded-2xl bg-white/10 p-5 text-base leading-relaxed text-white">
               <p className="mb-2 font-semibold">{t("footer.privacyTitle")}</p>
               <p>{t("footer.privacyBody")}</p>
             </div>
           </div>
         )}
 
-        <div className="flex flex-col items-center gap-3 border-t border-white/15 py-4 text-center text-xs opacity-70">
+        <div className="flex flex-col items-center gap-3 border-t border-white/15 py-4 text-center text-sm text-white">
           <LanguageSwitcher />
           <p>© {new Date().getFullYear()} Marilyn Joven · {t("footer.rights")}</p>
         </div>
